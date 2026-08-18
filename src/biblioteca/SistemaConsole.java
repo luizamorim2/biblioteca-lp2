@@ -1,8 +1,6 @@
 package biblioteca;
 
 import biblioteca.domain.TipoMembro;
-import biblioteca.exception.EntidadeNaoEncontradaException;
-import biblioteca.exception.RegraNegocioException;
 
 import java.util.Scanner;
 
@@ -17,7 +15,8 @@ public class SistemaConsole {
     }
 
     public void iniciar() {
-        carregarDadosIniciais();
+        controlador.carregarDadosIniciais();
+        System.out.println("Dados de exemplo carregados.\n");
 
         int opcao;
         do {
@@ -28,15 +27,6 @@ public class SistemaConsole {
         } while (opcao != 0);
 
         scanner.close();
-    }
-
-    private void carregarDadosIniciais() {
-        try {
-            controlador.carregarDadosIniciais();
-            System.out.println("Dados de exemplo carregados.\n");
-        } catch (RegraNegocioException e) {
-            System.out.println("Erro ao carregar dados de exemplo: " + e.getMessage());
-        }
     }
 
     private void exibirMenu() {
@@ -106,11 +96,12 @@ public class SistemaConsole {
         String titulo = lerTexto("Titulo: ");
         String autor = lerTexto("Autor: ");
 
-        try {
-            controlador.cadastrarLivro(codigo, titulo, autor);
+        boolean sucesso = controlador.cadastrarLivro(codigo, titulo, autor);
+
+        if (sucesso) {
             System.out.println("Livro cadastrado com sucesso.");
-        } catch (RegraNegocioException e) {
-            System.out.println("Erro: " + e.getMessage());
+        } else {
+            System.out.println(controlador.getUltimoErro());
         }
     }
 
@@ -119,11 +110,12 @@ public class SistemaConsole {
         String titulo = lerTexto("Titulo: ");
         int edicao = lerInteiro("Numero da edicao: ");
 
-        try {
-            controlador.cadastrarRevista(codigo, titulo, edicao);
+        boolean sucesso = controlador.cadastrarRevista(codigo, titulo, edicao);
+
+        if (sucesso) {
             System.out.println("Revista cadastrada com sucesso.");
-        } catch (RegraNegocioException e) {
-            System.out.println("Erro: " + e.getMessage());
+        } else {
+            System.out.println(controlador.getUltimoErro());
         }
     }
 
@@ -131,68 +123,67 @@ public class SistemaConsole {
         String matricula = lerTexto("Matricula: ");
         String nome = lerTexto("Nome: ");
         TipoMembro tipo = lerTipoMembro();
+
         if (tipo == null) {
             return;
         }
 
-        try {
-            controlador.cadastrarMembro(matricula, nome, tipo);
+        boolean sucesso = controlador.cadastrarMembro(matricula, nome, tipo);
+
+        if (sucesso) {
             System.out.println("Membro cadastrado com sucesso.");
-        } catch (RegraNegocioException e) {
-            System.out.println("Erro: " + e.getMessage());
+        } else {
+            System.out.println(controlador.getUltimoErro());
         }
     }
 
     private void consultarItem() {
         String codigo = lerTexto("Codigo do item: ");
-        try {
-            System.out.println(controlador.consultarItem(codigo));
-        } catch (EntidadeNaoEncontradaException e) {
-            System.out.println("Erro: " + e.getMessage());
-        }
+        System.out.println(controlador.consultarItem(codigo));
     }
 
     private void alterarTituloItem() {
         String codigo = lerTexto("Codigo do item: ");
         String novoTitulo = lerTexto("Novo titulo: ");
-        try {
-            System.out.println(controlador.alterarTituloItem(codigo, novoTitulo));
-        } catch (EntidadeNaoEncontradaException | RegraNegocioException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+        boolean sucesso = controlador.alterarTituloItem(codigo, novoTitulo);
+
+        if (sucesso) {
+            System.out.println("Titulo alterado com sucesso.");
+        } else {
+            System.out.println(controlador.getUltimoErro());
         }
     }
 
     private void alterarTipoMembro() {
         String matricula = lerTexto("Matricula do membro: ");
         TipoMembro tipo = lerTipoMembro();
+
         if (tipo == null) {
             return;
         }
-        try {
-            System.out.println(controlador.alterarTipoMembro(matricula, tipo));
-        } catch (EntidadeNaoEncontradaException | RegraNegocioException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+        boolean sucesso = controlador.alterarTipoMembro(matricula, tipo);
+
+        if (sucesso) {
+            System.out.println("Tipo alterado com sucesso.");
+        } else {
+            System.out.println(controlador.getUltimoErro());
         }
     }
 
     private void realizarEmprestimo() {
         String codigo = lerTexto("Codigo do item: ");
         String matricula = lerTexto("Matricula do membro: ");
-        try {
-            System.out.println(controlador.realizarEmprestimo(codigo, matricula));
-        } catch (EntidadeNaoEncontradaException | RegraNegocioException e) {
-            System.out.println("Erro: " + e.getMessage());
-        }
+
+        System.out.println(controlador.realizarEmprestimo(codigo, matricula));
     }
 
     private void registrarDevolucao() {
         String codigo = lerTexto("Codigo do item: ");
         int diasAtraso = lerInteiro("Dias de atraso (0 se estiver no prazo): ");
-        try {
-            System.out.println(controlador.registrarDevolucao(codigo, diasAtraso));
-        } catch (EntidadeNaoEncontradaException | RegraNegocioException e) {
-            System.out.println("Erro: " + e.getMessage());
-        }
+
+        System.out.println(controlador.registrarDevolucao(codigo, diasAtraso));
     }
 
     private TipoMembro lerTipoMembro() {
@@ -203,6 +194,7 @@ public class SistemaConsole {
         }
 
         int escolha = lerInteiro("Tipo: ");
+
         if (escolha < 1 || escolha > tipos.length) {
             System.out.println("Tipo invalido.");
             return null;
@@ -214,6 +206,7 @@ public class SistemaConsole {
         while (true) {
             System.out.print(mensagem);
             String entrada = scanner.nextLine();
+
             try {
                 return Integer.parseInt(entrada.trim());
             } catch (NumberFormatException e) {

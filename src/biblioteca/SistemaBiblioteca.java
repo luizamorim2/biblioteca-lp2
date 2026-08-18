@@ -7,7 +7,6 @@ import biblioteca.domain.Membro;
 import biblioteca.domain.Multavel;
 import biblioteca.domain.Revista;
 import biblioteca.domain.TipoMembro;
-import biblioteca.exception.EntidadeNaoEncontradaException;
 import biblioteca.exception.RegraNegocioException;
 
 import java.util.ArrayList;
@@ -20,60 +19,71 @@ public class SistemaBiblioteca {
     private final Map<String, ItemAcervo> acervo;
     private final Map<String, Membro> membros;
     private final List<Emprestimo> emprestimos;
+    private String ultimoErro;
 
     public SistemaBiblioteca() {
         this.acervo = new HashMap<>();
         this.membros = new HashMap<>();
         this.emprestimos = new ArrayList<>();
+        this.ultimoErro = "";
     }
 
-    public void cadastrarLivro(String codigo, String titulo, String autor) throws RegraNegocioException {
-        adicionarItem(new Livro(codigo, titulo, autor));
+    public boolean cadastrarLivro(String codigo, String titulo, String autor) {
+        try {
+            return adicionarItem(new Livro(codigo, titulo, autor));
+        } catch (RegraNegocioException e) {
+            ultimoErro = e.getMessage();
+            return false;
+        }
     }
 
-    public void cadastrarRevista(String codigo, String titulo, int edicao) throws RegraNegocioException {
-        adicionarItem(new Revista(codigo, titulo, edicao));
+    public boolean cadastrarRevista(String codigo, String titulo, int edicao) {
+        try {
+            return adicionarItem(new Revista(codigo, titulo, edicao));
+        } catch (RegraNegocioException e) {
+            ultimoErro = e.getMessage();
+            return false;
+        }
     }
 
-    private void adicionarItem(ItemAcervo item) throws RegraNegocioException {
+    private boolean adicionarItem(ItemAcervo item) throws RegraNegocioException {
         if (acervo.containsKey(item.getCodigo())) {
             throw new RegraNegocioException("Ja existe um item com o codigo " + item.getCodigo() + ".");
         }
         acervo.put(item.getCodigo(), item);
+        return true;
     }
 
-    public void cadastrarMembro(String matricula, String nome, TipoMembro tipo) throws RegraNegocioException {
-        Membro membro = new Membro(matricula, nome, tipo);
-        if (membros.containsKey(membro.getMatricula())) {
-            throw new RegraNegocioException("Ja existe um membro com a matricula " + membro.getMatricula() + ".");
+    public boolean cadastrarMembro(String matricula, String nome, TipoMembro tipo) {
+        try {
+            Membro membro = new Membro(matricula, nome, tipo);
+            if (membros.containsKey(membro.getMatricula())) {
+                throw new RegraNegocioException("Ja existe um membro com a matricula " + membro.getMatricula() + ".");
+            }
+            membros.put(membro.getMatricula(), membro);
+            return true;
+        } catch (RegraNegocioException e) {
+            ultimoErro = e.getMessage();
+            return false;
         }
-        membros.put(membro.getMatricula(), membro);
     }
 
-    private ItemAcervo buscarItem(String codigo) throws EntidadeNaoEncontradaException {
-        ItemAcervo item = acervo.get(normalizar(codigo));
-        if (item == null) {
-            throw new EntidadeNaoEncontradaException("Item nao encontrado para o codigo " + normalizar(codigo) + ".");
-        }
-        return item;
+    public ItemAcervo buscarItem(String codigo) {
+        return acervo.get(normalizar(codigo));
     }
 
-    private Membro buscarMembro(String matricula) throws EntidadeNaoEncontradaException {
-        Membro membro = membros.get(normalizar(matricula));
-        if (membro == null) {
-            throw new EntidadeNaoEncontradaException("Membro nao encontrado para a matricula " + normalizar(matricula) + ".");
-        }
-        return membro;
+    public Membro buscarMembro(String matricula) {
+        return membros.get(normalizar(matricula));
     }
 
-    private Emprestimo buscarEmprestimoAtivo(String codigoItem) throws EntidadeNaoEncontradaException {
+    private Emprestimo buscarEmprestimoAtivo(String codigoItem) {
         String codigo = normalizar(codigoItem);
         for (Emprestimo emprestimo : emprestimos) {
             if (emprestimo.estaAtivo() && emprestimo.getItem().getCodigo().equals(codigo)) {
                 return emprestimo;
             }
         }
-        throw new EntidadeNaoEncontradaException("Nao existe emprestimo ativo para o item " + codigo + ".");
+        return null;
     }
 
     private String normalizar(String texto) {
@@ -83,8 +93,16 @@ public class SistemaBiblioteca {
         return texto.trim().toUpperCase();
     }
 
-    public String consultarItem(String codigo) throws EntidadeNaoEncontradaException {
-        return buscarItem(codigo).exibirInformacoes();
+    public int contarItens() {
+        return acervo.size();
+    }
+
+    public String consultarItem(String codigo) {
+        ItemAcervo item = buscarItem(codigo);
+        if (item == null) {
+            return "Item nao encontrado.";
+        }
+        return item.exibirInformacoes();
     }
 
     public String listarAcervo() {
@@ -122,31 +140,58 @@ public class SistemaBiblioteca {
         return sb.toString().trim();
     }
 
-    public String alterarTituloItem(String codigo, String novoTitulo)
-            throws EntidadeNaoEncontradaException, RegraNegocioException {
+    public boolean alterarTituloItem(String codigo, String novoTitulo) {
         ItemAcervo item = buscarItem(codigo);
-        item.setTitulo(novoTitulo);
-        return "Titulo atualizado: " + item.exibirResumo();
+        if (item == null) {
+            ultimoErro = "Item nao encontrado.";
+            return false;
+        }
+        try {
+            item.setTitulo(novoTitulo);
+            return true;
+        } catch (RegraNegocioException e) {
+            ultimoErro = e.getMessage();
+            return false;
+        }
     }
 
-    public String alterarTipoMembro(String matricula, TipoMembro novoTipo)
-            throws EntidadeNaoEncontradaException, RegraNegocioException {
+    public boolean alterarTipoMembro(String matricula, TipoMembro novoTipo) {
         Membro membro = buscarMembro(matricula);
-        membro.setTipo(novoTipo);
-        return membro.getNome() + " agora e do tipo " + membro.getTipo().name() + ".";
+        if (membro == null) {
+            ultimoErro = "Membro nao encontrado.";
+            return false;
+        }
+        try {
+            membro.setTipo(novoTipo);
+            return true;
+        } catch (RegraNegocioException e) {
+            ultimoErro = e.getMessage();
+            return false;
+        }
     }
 
-    public String realizarEmprestimo(String codigoItem, String matricula)
-            throws EntidadeNaoEncontradaException, RegraNegocioException {
+    public String realizarEmprestimo(String codigoItem, String matricula) {
         ItemAcervo item = buscarItem(codigoItem);
-        Membro membro = buscarMembro(matricula);
+        if (item == null) {
+            return "Item nao encontrado.";
+        }
 
-        item.emprestar();
+        Membro membro = buscarMembro(matricula);
+        if (membro == null) {
+            return "Membro nao encontrado.";
+        }
+
         try {
             membro.registrarEmprestimo();
         } catch (RegraNegocioException e) {
-            item.devolver();
-            throw e;
+            return e.getMessage();
+        }
+
+        try {
+            item.emprestar();
+        } catch (RegraNegocioException e) {
+            membro.registrarDevolucao();
+            return e.getMessage();
         }
 
         emprestimos.add(new Emprestimo(item, membro));
@@ -156,21 +201,31 @@ public class SistemaBiblioteca {
                 + "\nPrazo: " + item.getPrazoDias() + " dias";
     }
 
-    public String registrarDevolucao(String codigoItem, int diasAtraso)
-            throws EntidadeNaoEncontradaException, RegraNegocioException {
+    public String registrarDevolucao(String codigoItem, int diasAtraso) {
         Emprestimo emprestimo = buscarEmprestimoAtivo(codigoItem);
+        if (emprestimo == null) {
+            return "Nao existe emprestimo ativo para este item.";
+        }
 
-        double multa = emprestimo.registrarDevolucao(diasAtraso);
-        emprestimo.getItem().devolver();
-        emprestimo.getMembro().registrarDevolucao();
+        try {
+            double multa = emprestimo.registrarDevolucao(diasAtraso);
+            emprestimo.getItem().devolver();
+            emprestimo.getMembro().registrarDevolucao();
 
-        return "Devolucao registrada: " + emprestimo.getItem().exibirResumo()
-                + "\nDias de atraso: " + diasAtraso
-                + "\nMulta: " + Multavel.formatarValor(multa)
-                + "\nPolitica aplicada: " + emprestimo.getItem().descreverPoliticaMulta();
+            return "Devolucao registrada: " + emprestimo.getItem().exibirResumo()
+                    + "\nDias de atraso: " + diasAtraso
+                    + "\nMulta: " + Multavel.formatarValor(multa)
+                    + "\nPolitica aplicada: " + emprestimo.getItem().descreverPoliticaMulta();
+        } catch (RegraNegocioException e) {
+            return e.getMessage();
+        }
     }
 
-    public void carregarDadosIniciais() throws RegraNegocioException {
+    public String getUltimoErro() {
+        return ultimoErro;
+    }
+
+    public void carregarDadosIniciais() {
         cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
         cadastrarLivro("L02", "Clean Code", "Robert C. Martin");
         cadastrarRevista("R01", "Superinteressante", 456);

@@ -26,6 +26,14 @@ public abstract class ItemAcervo implements Multavel {
         return codigo;
     }
 
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public boolean isDisponivel() {
+        return disponivel;
+    }
+
     public void setTitulo(String novoTitulo) throws RegraNegocioException {
         validarTexto(novoTitulo, "Titulo");
         this.titulo = novoTitulo.trim();

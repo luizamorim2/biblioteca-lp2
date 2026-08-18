@@ -8,10 +8,7 @@ public class Emprestimo {
     private final Membro membro;
     private boolean devolvido;
 
-    public Emprestimo(ItemAcervo item, Membro membro) throws RegraNegocioException {
-        if (item == null || membro == null) {
-            throw new RegraNegocioException("Dados do emprestimo incompletos.");
-        }
+    public Emprestimo(ItemAcervo item, Membro membro) {
         this.item = item;
         this.membro = membro;
         this.devolvido = false;
@@ -30,9 +27,6 @@ public class Emprestimo {
     }
 
     public double registrarDevolucao(int diasAtraso) throws RegraNegocioException {
-        if (devolvido) {
-            throw new RegraNegocioException("Este emprestimo ja foi devolvido.");
-        }
         if (diasAtraso < 0) {
             throw new RegraNegocioException("Dias de atraso nao pode ser negativo.");
         }

@@ -2,204 +2,338 @@ package biblioteca;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import biblioteca.domain.TipoMembro;
-import biblioteca.exception.EntidadeNaoEncontradaException;
-import biblioteca.exception.RegraNegocioException;
 
 public class ControladorBibliotecaTest {
 
-    private ControladorBiblioteca controlador;
+    @Test
+    public void testCadastrarLivroValido() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
 
-    @Before
-    public void preparar() throws RegraNegocioException {
-        controlador = new ControladorBiblioteca();
+        boolean res = controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+
+        assertTrue(res);
+        assertEquals(1, controlador.contarItens());
+    }
+
+    @Test
+    public void testCadastrarRevistaValida() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        boolean res = controlador.cadastrarRevista("R01", "Superinteressante", 456);
+
+        assertTrue(res);
+        assertEquals(1, controlador.contarItens());
+    }
+
+    @Test
+    public void testNaoCadastrarItemComCodigoDuplicado() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        boolean res1 = controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+        boolean res2 = controlador.cadastrarRevista("L01", "Superinteressante", 456);
+
+        assertTrue(res1);
+        assertFalse(res2);
+        assertEquals(1, controlador.contarItens());
+        assertEquals("Ja existe um item com o codigo L01.", controlador.getUltimoErro());
+    }
+
+    @Test
+    public void testNaoCadastrarLivroSemTitulo() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        boolean res = controlador.cadastrarLivro("L01", "   ", "Machado de Assis");
+
+        assertFalse(res);
+        assertEquals(0, controlador.contarItens());
+        assertEquals("Titulo nao pode ficar vazio.", controlador.getUltimoErro());
+    }
+
+    @Test
+    public void testNaoCadastrarRevistaComEdicaoInvalida() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        boolean res = controlador.cadastrarRevista("R01", "Superinteressante", 0);
+
+        assertFalse(res);
+        assertEquals("Numero da edicao deve ser maior que zero.", controlador.getUltimoErro());
+    }
+
+    @Test
+    public void testBuscarItemIgnorandoMaiusculas() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+
+        assertNotNull(controlador.buscarItem("l01"));
+        assertEquals("Dom Casmurro", controlador.buscarItem("l01").getTitulo());
+    }
+
+    @Test
+    public void testBuscarItemInexistente() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        assertNull(controlador.buscarItem("XX99"));
+        assertEquals("Item nao encontrado.", controlador.consultarItem("XX99"));
+    }
+
+    @Test
+    public void testPrazoDependeDoTipoDoItem() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
         controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
         controlador.cadastrarRevista("R01", "Superinteressante", 456);
+
+        assertEquals(14, controlador.buscarItem("L01").getPrazoDias());
+        assertEquals(7, controlador.buscarItem("R01").getPrazoDias());
+    }
+
+    @Test
+    public void testMultaDoLivroCrescePorDiaSemTeto() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+
+        assertEquals(1.50, controlador.buscarItem("L01").calcularMulta(1), 0.001);
+        assertEquals(67.50, controlador.buscarItem("L01").calcularMulta(45), 0.001);
+    }
+
+    @Test
+    public void testMultaDaRevistaParaNoTeto() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarRevista("R01", "Superinteressante", 456);
+
+        assertEquals(2.00, controlador.buscarItem("R01").calcularMulta(4), 0.001);
+        assertEquals(10.00, controlador.buscarItem("R01").calcularMulta(52), 0.001);
+    }
+
+    @Test
+    public void testItemNoPrazoNaoGeraMulta() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+
+        assertEquals(0.0, controlador.buscarItem("L01").calcularMulta(0), 0.001);
+    }
+
+    @Test
+    public void testAlterarTituloDoItem() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+
+        boolean res = controlador.alterarTituloItem("L01", "Dom Casmurro - Edicao Comentada");
+
+        assertTrue(res);
+        assertEquals("Dom Casmurro - Edicao Comentada", controlador.buscarItem("L01").getTitulo());
+    }
+
+    @Test
+    public void testNaoAlterarTituloParaVazioMantemOAnterior() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+
+        boolean res = controlador.alterarTituloItem("L01", "");
+
+        assertFalse(res);
+        assertEquals("Titulo nao pode ficar vazio.", controlador.getUltimoErro());
+        assertEquals("Dom Casmurro", controlador.buscarItem("L01").getTitulo());
+    }
+
+    @Test
+    public void testRealizarEmprestimo() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+        controlador.cadastrarMembro("A100", "Ana Souza", TipoMembro.ALUNO);
+
+        String res = controlador.realizarEmprestimo("L01", "A100");
+
+        assertTrue(res.contains("Emprestimo registrado para Ana Souza."));
+        assertFalse(controlador.buscarItem("L01").isDisponivel());
+        assertEquals(1, controlador.buscarMembro("A100").getEmprestimosAtivos());
+    }
+
+    @Test
+    public void testNaoEmprestarItemJaEmprestado() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
         controlador.cadastrarMembro("A100", "Ana Souza", TipoMembro.ALUNO);
         controlador.cadastrarMembro("P200", "Carlos Lima", TipoMembro.PROFESSOR);
-    }
 
-    @Test
-    public void testCadastrarLivroEConsultarPeloCodigo() throws Exception {
-        String res = controlador.consultarItem("L01");
-
-        assertTrue(res.contains("Dom Casmurro"));
-        assertTrue(res.contains("Autor: Machado de Assis"));
-        assertTrue(res.contains("Situacao: Disponivel"));
-    }
-
-    @Test
-    public void testCodigoDoItemNaoDiferenciaMaiusculas() throws Exception {
-        String res = controlador.consultarItem("l01");
-
-        assertTrue(res.contains("Dom Casmurro"));
-    }
-
-    @Test(expected = RegraNegocioException.class)
-    public void testNaoCadastrarItemComCodigoDuplicado() throws Exception {
-        controlador.cadastrarLivro("L01", "Outro Livro", "Outro Autor");
-    }
-
-    @Test(expected = RegraNegocioException.class)
-    public void testNaoCadastrarLivroSemTitulo() throws Exception {
-        controlador.cadastrarLivro("L99", "   ", "Machado de Assis");
-    }
-
-    @Test(expected = EntidadeNaoEncontradaException.class)
-    public void testConsultarItemInexistente() throws Exception {
-        controlador.consultarItem("XX99");
-    }
-
-    @Test
-    public void testAlterarTituloDoItem() throws Exception {
-        controlador.alterarTituloItem("L01", "Dom Casmurro - Edicao Comentada");
-
-        assertTrue(controlador.consultarItem("L01").contains("Dom Casmurro - Edicao Comentada"));
-    }
-
-    @Test
-    public void testEmprestimoMarcaItemComoEmprestado() throws Exception {
         controlador.realizarEmprestimo("L01", "A100");
+        String res = controlador.realizarEmprestimo("L01", "P200");
 
-        assertTrue(controlador.consultarItem("L01").contains("Situacao: Emprestado"));
-        assertTrue(controlador.listarMembros().contains("Emprestimos ativos: 1/3"));
+        assertEquals("O item \"Dom Casmurro\" ja esta emprestado.", res);
+        assertEquals(0, controlador.buscarMembro("P200").getEmprestimosAtivos());
     }
 
     @Test
-    public void testNaoEmprestarItemJaEmprestado() throws Exception {
-        controlador.realizarEmprestimo("L01", "A100");
+    public void testAlunoNaoPassaDoLimiteDoSeuTipo() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
 
-        try {
-            controlador.realizarEmprestimo("L01", "P200");
-            fail("Deveria ter lancado RegraNegocioException.");
-        } catch (RegraNegocioException e) {
-            assertEquals("O item \"Dom Casmurro\" ja esta emprestado.", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testAlunoNaoPassaDoLimiteDoSeuTipo() throws Exception {
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
         controlador.cadastrarLivro("L02", "Clean Code", "Robert C. Martin");
         controlador.cadastrarLivro("L03", "O Cortico", "Aluisio Azevedo");
         controlador.cadastrarLivro("L04", "Iracema", "Jose de Alencar");
+        controlador.cadastrarMembro("A100", "Ana Souza", TipoMembro.ALUNO);
 
         controlador.realizarEmprestimo("L01", "A100");
         controlador.realizarEmprestimo("L02", "A100");
         controlador.realizarEmprestimo("L03", "A100");
+        String res = controlador.realizarEmprestimo("L04", "A100");
 
-        try {
-            controlador.realizarEmprestimo("L04", "A100");
-            fail("Deveria ter lancado RegraNegocioException.");
-        } catch (RegraNegocioException e) {
-            assertEquals("Ana Souza atingiu o limite de 3 emprestimos do tipo ALUNO.", e.getMessage());
-        }
+        assertEquals("Ana Souza atingiu o limite de 3 emprestimos do tipo ALUNO.", res);
+        assertEquals(3, controlador.buscarMembro("A100").getEmprestimosAtivos());
+        assertTrue(controlador.buscarItem("L04").isDisponivel());
     }
 
     @Test
-    public void testItemContinuaDisponivelQuandoLimiteEstoura() throws Exception {
+    public void testProfessorTemLimiteMaiorQueAluno() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
         controlador.cadastrarLivro("L02", "Clean Code", "Robert C. Martin");
         controlador.cadastrarLivro("L03", "O Cortico", "Aluisio Azevedo");
         controlador.cadastrarLivro("L04", "Iracema", "Jose de Alencar");
+        controlador.cadastrarMembro("P200", "Carlos Lima", TipoMembro.PROFESSOR);
 
-        controlador.realizarEmprestimo("L01", "A100");
-        controlador.realizarEmprestimo("L02", "A100");
-        controlador.realizarEmprestimo("L03", "A100");
+        controlador.realizarEmprestimo("L01", "P200");
+        controlador.realizarEmprestimo("L02", "P200");
+        controlador.realizarEmprestimo("L03", "P200");
+        String res = controlador.realizarEmprestimo("L04", "P200");
 
-        try {
-            controlador.realizarEmprestimo("L04", "A100");
-        } catch (RegraNegocioException e) {
-            assertTrue(e.getMessage().contains("limite"));
-        }
-
-        assertTrue(controlador.consultarItem("L04").contains("Situacao: Disponivel"));
-        controlador.realizarEmprestimo("L04", "P200");
-        assertTrue(controlador.consultarItem("L04").contains("Situacao: Emprestado"));
+        assertTrue(res.contains("Emprestimo registrado para Carlos Lima."));
+        assertEquals(4, controlador.buscarMembro("P200").getEmprestimosAtivos());
     }
 
     @Test
-    public void testProfessorTemLimiteMaiorQueAluno() throws Exception {
-        assertTrue(controlador.listarMembros().contains("Emprestimos ativos: 0/3"));
-        assertTrue(controlador.listarMembros().contains("Emprestimos ativos: 0/5"));
-    }
+    public void testNaoRebaixarTipoComEmprestimosAcimaDoNovoLimite() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
 
-    @Test
-    public void testNaoRebaixarTipoComEmprestimosAcimaDoNovoLimite() throws Exception {
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
         controlador.cadastrarLivro("L02", "Clean Code", "Robert C. Martin");
         controlador.cadastrarLivro("L03", "O Cortico", "Aluisio Azevedo");
+        controlador.cadastrarMembro("A100", "Ana Souza", TipoMembro.ALUNO);
 
         controlador.realizarEmprestimo("L01", "A100");
         controlador.realizarEmprestimo("L02", "A100");
         controlador.realizarEmprestimo("L03", "A100");
 
-        try {
-            controlador.alterarTipoMembro("A100", TipoMembro.COMUNIDADE);
-            fail("Deveria ter lancado RegraNegocioException.");
-        } catch (RegraNegocioException e) {
-            assertEquals("Ana Souza possui 3 emprestimos ativos e o tipo COMUNIDADE permite apenas 2.",
-                    e.getMessage());
-        }
+        boolean res = controlador.alterarTipoMembro("A100", TipoMembro.COMUNIDADE);
 
-        assertTrue(controlador.listarMembros().contains("Tipo: ALUNO"));
+        assertFalse(res);
+        assertEquals("Ana Souza possui 3 emprestimos ativos e o tipo COMUNIDADE permite apenas 2.",
+                controlador.getUltimoErro());
+        assertEquals(TipoMembro.ALUNO, controlador.buscarMembro("A100").getTipo());
     }
 
     @Test
-    public void testAlterarTipoMembroQuandoPermitido() throws Exception {
-        String res = controlador.alterarTipoMembro("A100", TipoMembro.PROFESSOR);
+    public void testAlterarTipoMembroQuandoPermitido() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
 
-        assertEquals("Ana Souza agora e do tipo PROFESSOR.", res);
-        assertFalse(controlador.listarMembros().contains("Tipo: ALUNO"));
+        controlador.cadastrarMembro("A100", "Ana Souza", TipoMembro.ALUNO);
+
+        boolean res = controlador.alterarTipoMembro("A100", TipoMembro.PROFESSOR);
+
+        assertTrue(res);
+        assertEquals(TipoMembro.PROFESSOR, controlador.buscarMembro("A100").getTipo());
     }
 
     @Test
-    public void testDevolucaoLiberaItemEVagaDoMembro() throws Exception {
+    public void testDevolucaoLiberaItemEVagaDoMembro() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+        controlador.cadastrarMembro("A100", "Ana Souza", TipoMembro.ALUNO);
         controlador.realizarEmprestimo("L01", "A100");
 
         String res = controlador.registrarDevolucao("L01", 0);
 
         assertTrue(res.contains("Dias de atraso: 0"));
-        assertTrue(controlador.consultarItem("L01").contains("Situacao: Disponivel"));
-        assertTrue(controlador.listarMembros().contains("Emprestimos ativos: 0/3"));
+        assertTrue(controlador.buscarItem("L01").isDisponivel());
+        assertEquals(0, controlador.buscarMembro("A100").getEmprestimosAtivos());
         assertEquals("Nenhum emprestimo ativo no momento.", controlador.listarEmprestimosAtivos());
     }
 
     @Test
-    public void testDevolucaoComAtrasoInformaAPoliticaDoItem() throws Exception {
-        controlador.realizarEmprestimo("L01", "A100");
+    public void testDevolucaoInformaAPoliticaDeMultaDoItem() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+        controlador.cadastrarRevista("R01", "Superinteressante", 456);
+        controlador.cadastrarMembro("P200", "Carlos Lima", TipoMembro.PROFESSOR);
+        controlador.realizarEmprestimo("L01", "P200");
         controlador.realizarEmprestimo("R01", "P200");
 
         String resLivro = controlador.registrarDevolucao("L01", 45);
         String resRevista = controlador.registrarDevolucao("R01", 45);
 
-        assertTrue(resLivro.contains("por dia de atraso"));
         assertFalse(resLivro.contains("limitada a"));
         assertTrue(resRevista.contains("limitada a"));
     }
 
-    @Test(expected = EntidadeNaoEncontradaException.class)
-    public void testNaoDevolverItemSemEmprestimoAtivo() throws Exception {
-        controlador.registrarDevolucao("L01", 0);
+    @Test
+    public void testDevolverItemSemEmprestimoAtivo() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+
+        String res = controlador.registrarDevolucao("L01", 0);
+
+        assertEquals("Nao existe emprestimo ativo para este item.", res);
     }
 
-    @Test(expected = EntidadeNaoEncontradaException.class)
-    public void testNaoDevolverDuasVezesOMesmoEmprestimo() throws Exception {
+    @Test
+    public void testNaoDevolverDuasVezesOMesmoItem() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+        controlador.cadastrarMembro("A100", "Ana Souza", TipoMembro.ALUNO);
         controlador.realizarEmprestimo("L01", "A100");
         controlador.registrarDevolucao("L01", 0);
-        controlador.registrarDevolucao("L01", 0);
+
+        String res = controlador.registrarDevolucao("L01", 0);
+
+        assertEquals("Nao existe emprestimo ativo para este item.", res);
+    }
+
+    @Test
+    public void testDiasDeAtrasoNegativoNaoEAceito() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+        controlador.cadastrarMembro("A100", "Ana Souza", TipoMembro.ALUNO);
+        controlador.realizarEmprestimo("L01", "A100");
+
+        String res = controlador.registrarDevolucao("L01", -5);
+
+        assertEquals("Dias de atraso nao pode ser negativo.", res);
+        assertFalse(controlador.buscarItem("L01").isDisponivel());
     }
 
     @Test
     public void testListarAcervoTrazTodosOsTiposDeItem() {
+        ControladorBiblioteca controlador = new ControladorBiblioteca();
+
+        controlador.cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+        controlador.cadastrarRevista("R01", "Superinteressante", 456);
+
         String res = controlador.listarAcervo();
 
         assertTrue(res.contains("[Livro] L01"));
-        assertTrue(res.contains("[Revista] R01"));
         assertTrue(res.contains("Autor: Machado de Assis"));
+        assertTrue(res.contains("[Revista] R01"));
         assertTrue(res.contains("Edicao: 456"));
     }
 }

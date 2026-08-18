@@ -1,8 +1,8 @@
 package biblioteca;
 
+import biblioteca.domain.ItemAcervo;
+import biblioteca.domain.Membro;
 import biblioteca.domain.TipoMembro;
-import biblioteca.exception.EntidadeNaoEncontradaException;
-import biblioteca.exception.RegraNegocioException;
 
 public class ControladorBiblioteca {
 
@@ -12,20 +12,36 @@ public class ControladorBiblioteca {
         this.sistema = new SistemaBiblioteca();
     }
 
-    public void carregarDadosIniciais() throws RegraNegocioException {
+    public void carregarDadosIniciais() {
         sistema.carregarDadosIniciais();
     }
 
-    public void cadastrarLivro(String codigo, String titulo, String autor) throws RegraNegocioException {
-        sistema.cadastrarLivro(codigo, titulo, autor);
+    public boolean cadastrarLivro(String codigo, String titulo, String autor) {
+        return sistema.cadastrarLivro(codigo, titulo, autor);
     }
 
-    public void cadastrarRevista(String codigo, String titulo, int edicao) throws RegraNegocioException {
-        sistema.cadastrarRevista(codigo, titulo, edicao);
+    public boolean cadastrarRevista(String codigo, String titulo, int edicao) {
+        return sistema.cadastrarRevista(codigo, titulo, edicao);
     }
 
-    public void cadastrarMembro(String matricula, String nome, TipoMembro tipo) throws RegraNegocioException {
-        sistema.cadastrarMembro(matricula, nome, tipo);
+    public boolean cadastrarMembro(String matricula, String nome, TipoMembro tipo) {
+        return sistema.cadastrarMembro(matricula, nome, tipo);
+    }
+
+    public ItemAcervo buscarItem(String codigo) {
+        return sistema.buscarItem(codigo);
+    }
+
+    public Membro buscarMembro(String matricula) {
+        return sistema.buscarMembro(matricula);
+    }
+
+    public int contarItens() {
+        return sistema.contarItens();
+    }
+
+    public String consultarItem(String codigo) {
+        return sistema.consultarItem(codigo);
     }
 
     public String listarAcervo() {
@@ -40,27 +56,23 @@ public class ControladorBiblioteca {
         return sistema.listarEmprestimosAtivos();
     }
 
-    public String consultarItem(String codigo) throws EntidadeNaoEncontradaException {
-        return sistema.consultarItem(codigo);
-    }
-
-    public String alterarTituloItem(String codigo, String novoTitulo)
-            throws EntidadeNaoEncontradaException, RegraNegocioException {
+    public boolean alterarTituloItem(String codigo, String novoTitulo) {
         return sistema.alterarTituloItem(codigo, novoTitulo);
     }
 
-    public String alterarTipoMembro(String matricula, TipoMembro novoTipo)
-            throws EntidadeNaoEncontradaException, RegraNegocioException {
+    public boolean alterarTipoMembro(String matricula, TipoMembro novoTipo) {
         return sistema.alterarTipoMembro(matricula, novoTipo);
     }
 
-    public String realizarEmprestimo(String codigoItem, String matricula)
-            throws EntidadeNaoEncontradaException, RegraNegocioException {
+    public String realizarEmprestimo(String codigoItem, String matricula) {
         return sistema.realizarEmprestimo(codigoItem, matricula);
     }
 
-    public String registrarDevolucao(String codigoItem, int diasAtraso)
-            throws EntidadeNaoEncontradaException, RegraNegocioException {
+    public String registrarDevolucao(String codigoItem, int diasAtraso) {
         return sistema.registrarDevolucao(codigoItem, diasAtraso);
+    }
+
+    public String getUltimoErro() {
+        return sistema.getUltimoErro();
     }
 }

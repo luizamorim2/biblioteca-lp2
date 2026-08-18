@@ -9,8 +9,10 @@ classDiagram
         -Map~String, ItemAcervo~ acervo
         -Map~String, Membro~ membros
         -List~Emprestimo~ emprestimos
+        -String ultimoErro
         +realizarEmprestimo(codigo, matricula) String
         +registrarDevolucao(codigo, diasAtraso) String
+        +getUltimoErro() String
     }
 
     class Multavel {
@@ -61,7 +63,6 @@ classDiagram
     }
 
     class RegraNegocioException
-    class EntidadeNaoEncontradaException
 
     Main --> SistemaConsole
     SistemaConsole --> ControladorBiblioteca
@@ -80,5 +81,4 @@ classDiagram
     Emprestimo --> Membro
 
     Exception <|-- RegraNegocioException
-    Exception <|-- EntidadeNaoEncontradaException
 ```

@@ -49,6 +49,10 @@ public class Membro {
         this.tipo = novoTipo;
     }
 
+    public int getEmprestimosAtivos() {
+        return emprestimosAtivos;
+    }
+
     public void registrarEmprestimo() throws RegraNegocioException {
         if (emprestimosAtivos >= tipo.getLimiteEmprestimos()) {
             throw new RegraNegocioException(nome + " atingiu o limite de "
