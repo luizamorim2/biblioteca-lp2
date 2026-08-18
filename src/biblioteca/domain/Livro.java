@@ -9,14 +9,10 @@ public class Livro extends ItemAcervo {
 
     private final String autor;
 
-    public Livro(String codigo, String titulo, int anoPublicacao, String autor) throws RegraNegocioException {
-        super(codigo, titulo, anoPublicacao);
+    public Livro(String codigo, String titulo, String autor) throws RegraNegocioException {
+        super(codigo, titulo);
         validarTexto(autor, "Autor");
         this.autor = autor.trim();
-    }
-
-    public String getAutor() {
-        return autor;
     }
 
     @Override

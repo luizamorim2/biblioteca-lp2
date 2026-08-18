@@ -6,8 +6,7 @@ public class Emprestimo {
 
     private final ItemAcervo item;
     private final Membro membro;
-    private StatusEmprestimo status;
-    private double multa;
+    private boolean devolvido;
 
     public Emprestimo(ItemAcervo item, Membro membro) throws RegraNegocioException {
         if (item == null || membro == null) {
@@ -15,8 +14,7 @@ public class Emprestimo {
         }
         this.item = item;
         this.membro = membro;
-        this.status = StatusEmprestimo.ATIVO;
-        this.multa = 0.0;
+        this.devolvido = false;
     }
 
     public ItemAcervo getItem() {
@@ -27,35 +25,25 @@ public class Emprestimo {
         return membro;
     }
 
-    public StatusEmprestimo getStatus() {
-        return status;
-    }
-
-    public double getMulta() {
-        return multa;
-    }
-
     public boolean estaAtivo() {
-        return status == StatusEmprestimo.ATIVO;
+        return !devolvido;
     }
 
     public double registrarDevolucao(int diasAtraso) throws RegraNegocioException {
-        if (status == StatusEmprestimo.DEVOLVIDO) {
+        if (devolvido) {
             throw new RegraNegocioException("Este emprestimo ja foi devolvido.");
         }
         if (diasAtraso < 0) {
             throw new RegraNegocioException("Dias de atraso nao pode ser negativo.");
         }
         Multavel politicaDeMulta = item;
-        this.multa = politicaDeMulta.calcularMulta(diasAtraso);
-        this.status = StatusEmprestimo.DEVOLVIDO;
-        return multa;
+        this.devolvido = true;
+        return politicaDeMulta.calcularMulta(diasAtraso);
     }
 
     public String exibirInformacoes() {
         return item.exibirResumo()
                 + "\n   Membro: " + membro.getNome() + " (" + membro.getMatricula() + ")"
-                + "\n   Prazo: " + item.getPrazoDias() + " dias"
-                + "\n   Status: " + status.getDescricao();
+                + "\n   Prazo: " + item.getPrazoDias() + " dias";
     }
 }

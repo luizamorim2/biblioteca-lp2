@@ -6,18 +6,13 @@ public abstract class ItemAcervo implements Multavel {
 
     private final String codigo;
     private String titulo;
-    private final int anoPublicacao;
     private boolean disponivel;
 
-    protected ItemAcervo(String codigo, String titulo, int anoPublicacao) throws RegraNegocioException {
+    protected ItemAcervo(String codigo, String titulo) throws RegraNegocioException {
         validarTexto(codigo, "Codigo do item");
         validarTexto(titulo, "Titulo");
-        if (anoPublicacao < 1400 || anoPublicacao > 2100) {
-            throw new RegraNegocioException("Ano de publicacao invalido: " + anoPublicacao + ".");
-        }
         this.codigo = codigo.trim().toUpperCase();
         this.titulo = titulo.trim();
-        this.anoPublicacao = anoPublicacao;
         this.disponivel = true;
     }
 
@@ -31,21 +26,9 @@ public abstract class ItemAcervo implements Multavel {
         return codigo;
     }
 
-    public String getTitulo() {
-        return titulo;
-    }
-
     public void setTitulo(String novoTitulo) throws RegraNegocioException {
         validarTexto(novoTitulo, "Titulo");
         this.titulo = novoTitulo.trim();
-    }
-
-    public int getAnoPublicacao() {
-        return anoPublicacao;
-    }
-
-    public boolean isDisponivel() {
-        return disponivel;
     }
 
     public void emprestar() throws RegraNegocioException {
@@ -65,7 +48,7 @@ public abstract class ItemAcervo implements Multavel {
 
     protected abstract String descreverDadosEspecificos();
 
-    public String descreverSituacao() {
+    private String descreverSituacao() {
         if (disponivel) {
             return "Disponivel";
         }
@@ -78,7 +61,6 @@ public abstract class ItemAcervo implements Multavel {
 
     public String exibirInformacoes() {
         return "[" + getTipo() + "] " + codigo + " - " + titulo
-                + "\n   Ano: " + anoPublicacao
                 + "\n   " + descreverDadosEspecificos()
                 + "\n   Prazo: " + getPrazoDias() + " dias"
                 + "\n   Situacao: " + descreverSituacao()

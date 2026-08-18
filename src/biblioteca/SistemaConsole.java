@@ -1,5 +1,6 @@
 package biblioteca;
 
+import biblioteca.domain.TipoMembro;
 import biblioteca.exception.EntidadeNaoEncontradaException;
 import biblioteca.exception.RegraNegocioException;
 
@@ -49,7 +50,7 @@ public class SistemaConsole {
         System.out.println("5  - Listar membros");
         System.out.println("6  - Consultar item por codigo");
         System.out.println("7  - Alterar titulo de um item");
-        System.out.println("8  - Alterar nome de um membro");
+        System.out.println("8  - Alterar tipo de um membro");
         System.out.println("9  - Realizar emprestimo");
         System.out.println("10 - Registrar devolucao");
         System.out.println("11 - Listar emprestimos ativos");
@@ -81,7 +82,7 @@ public class SistemaConsole {
                 alterarTituloItem();
                 break;
             case 8:
-                alterarNomeMembro();
+                alterarTipoMembro();
                 break;
             case 9:
                 realizarEmprestimo();
@@ -103,11 +104,10 @@ public class SistemaConsole {
     private void cadastrarLivro() {
         String codigo = lerTexto("Codigo: ");
         String titulo = lerTexto("Titulo: ");
-        int ano = lerInteiro("Ano de publicacao: ");
         String autor = lerTexto("Autor: ");
 
         try {
-            controlador.cadastrarLivro(codigo, titulo, ano, autor);
+            controlador.cadastrarLivro(codigo, titulo, autor);
             System.out.println("Livro cadastrado com sucesso.");
         } catch (RegraNegocioException e) {
             System.out.println("Erro: " + e.getMessage());
@@ -117,11 +117,10 @@ public class SistemaConsole {
     private void cadastrarRevista() {
         String codigo = lerTexto("Codigo: ");
         String titulo = lerTexto("Titulo: ");
-        int ano = lerInteiro("Ano de publicacao: ");
         int edicao = lerInteiro("Numero da edicao: ");
 
         try {
-            controlador.cadastrarRevista(codigo, titulo, ano, edicao);
+            controlador.cadastrarRevista(codigo, titulo, edicao);
             System.out.println("Revista cadastrada com sucesso.");
         } catch (RegraNegocioException e) {
             System.out.println("Erro: " + e.getMessage());
@@ -131,9 +130,13 @@ public class SistemaConsole {
     private void cadastrarMembro() {
         String matricula = lerTexto("Matricula: ");
         String nome = lerTexto("Nome: ");
+        TipoMembro tipo = lerTipoMembro();
+        if (tipo == null) {
+            return;
+        }
 
         try {
-            controlador.cadastrarMembro(matricula, nome);
+            controlador.cadastrarMembro(matricula, nome, tipo);
             System.out.println("Membro cadastrado com sucesso.");
         } catch (RegraNegocioException e) {
             System.out.println("Erro: " + e.getMessage());
@@ -159,11 +162,14 @@ public class SistemaConsole {
         }
     }
 
-    private void alterarNomeMembro() {
+    private void alterarTipoMembro() {
         String matricula = lerTexto("Matricula do membro: ");
-        String novoNome = lerTexto("Novo nome: ");
+        TipoMembro tipo = lerTipoMembro();
+        if (tipo == null) {
+            return;
+        }
         try {
-            System.out.println(controlador.alterarNomeMembro(matricula, novoNome));
+            System.out.println(controlador.alterarTipoMembro(matricula, tipo));
         } catch (EntidadeNaoEncontradaException | RegraNegocioException e) {
             System.out.println("Erro: " + e.getMessage());
         }
@@ -187,6 +193,21 @@ public class SistemaConsole {
         } catch (EntidadeNaoEncontradaException | RegraNegocioException e) {
             System.out.println("Erro: " + e.getMessage());
         }
+    }
+
+    private TipoMembro lerTipoMembro() {
+        TipoMembro[] tipos = TipoMembro.values();
+        System.out.println("TIPOS DISPONIVEIS");
+        for (int i = 0; i < tipos.length; i++) {
+            System.out.println((i + 1) + " - " + tipos[i]);
+        }
+
+        int escolha = lerInteiro("Tipo: ");
+        if (escolha < 1 || escolha > tipos.length) {
+            System.out.println("Tipo invalido.");
+            return null;
+        }
+        return tipos[escolha - 1];
     }
 
     private int lerInteiro(String mensagem) {

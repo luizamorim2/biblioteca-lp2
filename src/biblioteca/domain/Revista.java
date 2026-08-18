@@ -10,16 +10,12 @@ public class Revista extends ItemAcervo {
 
     private final int edicao;
 
-    public Revista(String codigo, String titulo, int anoPublicacao, int edicao) throws RegraNegocioException {
-        super(codigo, titulo, anoPublicacao);
+    public Revista(String codigo, String titulo, int edicao) throws RegraNegocioException {
+        super(codigo, titulo);
         if (edicao <= 0) {
             throw new RegraNegocioException("Numero da edicao deve ser maior que zero.");
         }
         this.edicao = edicao;
-    }
-
-    public int getEdicao() {
-        return edicao;
     }
 
     @Override

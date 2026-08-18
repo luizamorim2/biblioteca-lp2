@@ -4,26 +4,25 @@ import biblioteca.exception.RegraNegocioException;
 
 public class Membro {
 
-    private static final int LIMITE_EMPRESTIMOS = 3;
-
     private final String matricula;
-    private String nome;
+    private final String nome;
+    private TipoMembro tipo;
     private int emprestimosAtivos;
 
-    public Membro(String matricula, String nome) throws RegraNegocioException {
+    public Membro(String matricula, String nome, TipoMembro tipo) throws RegraNegocioException {
         if (matricula == null || matricula.trim().isEmpty()) {
             throw new RegraNegocioException("Matricula nao pode ficar vazia.");
         }
-        validarNome(nome);
-        this.matricula = matricula.trim().toUpperCase();
-        this.nome = nome.trim();
-        this.emprestimosAtivos = 0;
-    }
-
-    private static void validarNome(String nome) throws RegraNegocioException {
         if (nome == null || nome.trim().isEmpty()) {
             throw new RegraNegocioException("Nome do membro nao pode ficar vazio.");
         }
+        if (tipo == null) {
+            throw new RegraNegocioException("Tipo de membro invalido.");
+        }
+        this.matricula = matricula.trim().toUpperCase();
+        this.nome = nome.trim();
+        this.tipo = tipo;
+        this.emprestimosAtivos = 0;
     }
 
     public String getMatricula() {
@@ -34,19 +33,26 @@ public class Membro {
         return nome;
     }
 
-    public void setNome(String novoNome) throws RegraNegocioException {
-        validarNome(novoNome);
-        this.nome = novoNome.trim();
+    public TipoMembro getTipo() {
+        return tipo;
     }
 
-    public int getEmprestimosAtivos() {
-        return emprestimosAtivos;
+    public void setTipo(TipoMembro novoTipo) throws RegraNegocioException {
+        if (novoTipo == null) {
+            throw new RegraNegocioException("Tipo de membro invalido.");
+        }
+        if (emprestimosAtivos > novoTipo.getLimiteEmprestimos()) {
+            throw new RegraNegocioException(nome + " possui " + emprestimosAtivos
+                    + " emprestimos ativos e o tipo " + novoTipo.name()
+                    + " permite apenas " + novoTipo.getLimiteEmprestimos() + ".");
+        }
+        this.tipo = novoTipo;
     }
 
     public void registrarEmprestimo() throws RegraNegocioException {
-        if (emprestimosAtivos >= LIMITE_EMPRESTIMOS) {
+        if (emprestimosAtivos >= tipo.getLimiteEmprestimos()) {
             throw new RegraNegocioException(nome + " atingiu o limite de "
-                    + LIMITE_EMPRESTIMOS + " emprestimos.");
+                    + tipo.getLimiteEmprestimos() + " emprestimos do tipo " + tipo.name() + ".");
         }
         this.emprestimosAtivos++;
     }
@@ -59,6 +65,7 @@ public class Membro {
 
     public String exibirInformacoes() {
         return matricula + " - " + nome
-                + "\n   Emprestimos ativos: " + emprestimosAtivos + "/" + LIMITE_EMPRESTIMOS;
+                + "\n   Tipo: " + tipo.name()
+                + "\n   Emprestimos ativos: " + emprestimosAtivos + "/" + tipo.getLimiteEmprestimos();
     }
 }

@@ -1,5 +1,6 @@
 package biblioteca;
 
+import biblioteca.domain.TipoMembro;
 import biblioteca.exception.EntidadeNaoEncontradaException;
 import biblioteca.exception.RegraNegocioException;
 
@@ -15,16 +16,16 @@ public class ControladorBiblioteca {
         sistema.carregarDadosIniciais();
     }
 
-    public void cadastrarLivro(String codigo, String titulo, int ano, String autor) throws RegraNegocioException {
-        sistema.cadastrarLivro(codigo, titulo, ano, autor);
+    public void cadastrarLivro(String codigo, String titulo, String autor) throws RegraNegocioException {
+        sistema.cadastrarLivro(codigo, titulo, autor);
     }
 
-    public void cadastrarRevista(String codigo, String titulo, int ano, int edicao) throws RegraNegocioException {
-        sistema.cadastrarRevista(codigo, titulo, ano, edicao);
+    public void cadastrarRevista(String codigo, String titulo, int edicao) throws RegraNegocioException {
+        sistema.cadastrarRevista(codigo, titulo, edicao);
     }
 
-    public void cadastrarMembro(String matricula, String nome) throws RegraNegocioException {
-        sistema.cadastrarMembro(matricula, nome);
+    public void cadastrarMembro(String matricula, String nome, TipoMembro tipo) throws RegraNegocioException {
+        sistema.cadastrarMembro(matricula, nome, tipo);
     }
 
     public String listarAcervo() {
@@ -48,9 +49,9 @@ public class ControladorBiblioteca {
         return sistema.alterarTituloItem(codigo, novoTitulo);
     }
 
-    public String alterarNomeMembro(String matricula, String novoNome)
+    public String alterarTipoMembro(String matricula, TipoMembro novoTipo)
             throws EntidadeNaoEncontradaException, RegraNegocioException {
-        return sistema.alterarNomeMembro(matricula, novoNome);
+        return sistema.alterarTipoMembro(matricula, novoTipo);
     }
 
     public String realizarEmprestimo(String codigoItem, String matricula)

@@ -6,6 +6,7 @@ import biblioteca.domain.Livro;
 import biblioteca.domain.Membro;
 import biblioteca.domain.Multavel;
 import biblioteca.domain.Revista;
+import biblioteca.domain.TipoMembro;
 import biblioteca.exception.EntidadeNaoEncontradaException;
 import biblioteca.exception.RegraNegocioException;
 
@@ -26,12 +27,12 @@ public class SistemaBiblioteca {
         this.emprestimos = new ArrayList<>();
     }
 
-    public void cadastrarLivro(String codigo, String titulo, int ano, String autor) throws RegraNegocioException {
-        adicionarItem(new Livro(codigo, titulo, ano, autor));
+    public void cadastrarLivro(String codigo, String titulo, String autor) throws RegraNegocioException {
+        adicionarItem(new Livro(codigo, titulo, autor));
     }
 
-    public void cadastrarRevista(String codigo, String titulo, int ano, int edicao) throws RegraNegocioException {
-        adicionarItem(new Revista(codigo, titulo, ano, edicao));
+    public void cadastrarRevista(String codigo, String titulo, int edicao) throws RegraNegocioException {
+        adicionarItem(new Revista(codigo, titulo, edicao));
     }
 
     private void adicionarItem(ItemAcervo item) throws RegraNegocioException {
@@ -41,15 +42,15 @@ public class SistemaBiblioteca {
         acervo.put(item.getCodigo(), item);
     }
 
-    public void cadastrarMembro(String matricula, String nome) throws RegraNegocioException {
-        Membro membro = new Membro(matricula, nome);
+    public void cadastrarMembro(String matricula, String nome, TipoMembro tipo) throws RegraNegocioException {
+        Membro membro = new Membro(matricula, nome, tipo);
         if (membros.containsKey(membro.getMatricula())) {
             throw new RegraNegocioException("Ja existe um membro com a matricula " + membro.getMatricula() + ".");
         }
         membros.put(membro.getMatricula(), membro);
     }
 
-    public ItemAcervo buscarItem(String codigo) throws EntidadeNaoEncontradaException {
+    private ItemAcervo buscarItem(String codigo) throws EntidadeNaoEncontradaException {
         ItemAcervo item = acervo.get(normalizar(codigo));
         if (item == null) {
             throw new EntidadeNaoEncontradaException("Item nao encontrado para o codigo " + normalizar(codigo) + ".");
@@ -57,7 +58,7 @@ public class SistemaBiblioteca {
         return item;
     }
 
-    public Membro buscarMembro(String matricula) throws EntidadeNaoEncontradaException {
+    private Membro buscarMembro(String matricula) throws EntidadeNaoEncontradaException {
         Membro membro = membros.get(normalizar(matricula));
         if (membro == null) {
             throw new EntidadeNaoEncontradaException("Membro nao encontrado para a matricula " + normalizar(matricula) + ".");
@@ -128,11 +129,11 @@ public class SistemaBiblioteca {
         return "Titulo atualizado: " + item.exibirResumo();
     }
 
-    public String alterarNomeMembro(String matricula, String novoNome)
+    public String alterarTipoMembro(String matricula, TipoMembro novoTipo)
             throws EntidadeNaoEncontradaException, RegraNegocioException {
         Membro membro = buscarMembro(matricula);
-        membro.setNome(novoNome);
-        return "Nome atualizado: " + membro.getMatricula() + " - " + membro.getNome();
+        membro.setTipo(novoTipo);
+        return membro.getNome() + " agora e do tipo " + membro.getTipo().name() + ".";
     }
 
     public String realizarEmprestimo(String codigoItem, String matricula)
@@ -170,10 +171,10 @@ public class SistemaBiblioteca {
     }
 
     public void carregarDadosIniciais() throws RegraNegocioException {
-        cadastrarLivro("L01", "Dom Casmurro", 1899, "Machado de Assis");
-        cadastrarLivro("L02", "Clean Code", 2008, "Robert C. Martin");
-        cadastrarRevista("R01", "Superinteressante", 2024, 456);
-        cadastrarMembro("A100", "Ana Souza");
-        cadastrarMembro("P200", "Carlos Lima");
+        cadastrarLivro("L01", "Dom Casmurro", "Machado de Assis");
+        cadastrarLivro("L02", "Clean Code", "Robert C. Martin");
+        cadastrarRevista("R01", "Superinteressante", 456);
+        cadastrarMembro("A100", "Ana Souza", TipoMembro.ALUNO);
+        cadastrarMembro("P200", "Carlos Lima", TipoMembro.PROFESSOR);
     }
 }

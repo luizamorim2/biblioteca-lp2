@@ -42,22 +42,22 @@ classDiagram
 
     class Membro {
         -String matricula
-        -String nome
+        -TipoMembro tipo
         -int emprestimosAtivos
         +registrarEmprestimo()
         +registrarDevolucao()
     }
 
     class Emprestimo {
-        -StatusEmprestimo status
-        -double multa
+        -boolean devolvido
         +registrarDevolucao(int diasAtraso) double
     }
 
-    class StatusEmprestimo {
+    class TipoMembro {
         <<enumeration>>
-        ATIVO
-        DEVOLVIDO
+        ALUNO 3
+        PROFESSOR 5
+        COMUNIDADE 2
     }
 
     class RegraNegocioException
@@ -75,9 +75,9 @@ classDiagram
     ItemAcervo <|-- Livro
     ItemAcervo <|-- Revista
 
+    Membro --> TipoMembro
     Emprestimo --> ItemAcervo
     Emprestimo --> Membro
-    Emprestimo --> StatusEmprestimo
 
     Exception <|-- RegraNegocioException
     Exception <|-- EntidadeNaoEncontradaException
