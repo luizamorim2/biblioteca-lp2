@@ -43,7 +43,6 @@ public class SistemaConsole {
         System.out.println("8  - Alterar tipo de um membro");
         System.out.println("9  - Realizar emprestimo");
         System.out.println("10 - Registrar devolucao");
-        System.out.println("11 - Listar emprestimos ativos");
         System.out.println("0  - Sair");
         System.out.println();
     }
@@ -79,9 +78,6 @@ public class SistemaConsole {
                 break;
             case 10:
                 registrarDevolucao();
-                break;
-            case 11:
-                System.out.println(controlador.listarEmprestimosAtivos());
                 break;
             case 0:
                 System.out.println("Sistema encerrado.");

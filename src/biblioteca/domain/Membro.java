@@ -33,10 +33,6 @@ public class Membro {
         return nome;
     }
 
-    public TipoMembro getTipo() {
-        return tipo;
-    }
-
     public void setTipo(TipoMembro novoTipo) throws RegraNegocioException {
         if (novoTipo == null) {
             throw new RegraNegocioException("Tipo de membro invalido.");

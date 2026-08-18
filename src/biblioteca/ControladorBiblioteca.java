@@ -52,10 +52,6 @@ public class ControladorBiblioteca {
         return sistema.listarMembros();
     }
 
-    public String listarEmprestimosAtivos() {
-        return sistema.listarEmprestimosAtivos();
-    }
-
     public boolean alterarTituloItem(String codigo, String novoTitulo) {
         return sistema.alterarTituloItem(codigo, novoTitulo);
     }

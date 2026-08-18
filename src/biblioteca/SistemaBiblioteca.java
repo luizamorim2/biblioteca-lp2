@@ -127,19 +127,6 @@ public class SistemaBiblioteca {
         return sb.toString().trim();
     }
 
-    public String listarEmprestimosAtivos() {
-        StringBuilder sb = new StringBuilder();
-        for (Emprestimo emprestimo : emprestimos) {
-            if (emprestimo.estaAtivo()) {
-                sb.append(emprestimo.exibirInformacoes()).append("\n\n");
-            }
-        }
-        if (sb.length() == 0) {
-            return "Nenhum emprestimo ativo no momento.";
-        }
-        return sb.toString().trim();
-    }
-
     public boolean alterarTituloItem(String codigo, String novoTitulo) {
         ItemAcervo item = buscarItem(codigo);
         if (item == null) {

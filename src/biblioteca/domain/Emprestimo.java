@@ -34,10 +34,4 @@ public class Emprestimo {
         this.devolvido = true;
         return politicaDeMulta.calcularMulta(diasAtraso);
     }
-
-    public String exibirInformacoes() {
-        return item.exibirResumo()
-                + "\n   Membro: " + membro.getNome() + " (" + membro.getMatricula() + ")"
-                + "\n   Prazo: " + item.getPrazoDias() + " dias";
-    }
 }
