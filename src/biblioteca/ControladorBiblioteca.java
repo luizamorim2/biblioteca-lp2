@@ -56,10 +56,6 @@ public class ControladorBiblioteca {
         return sistema.alterarTituloItem(codigo, novoTitulo);
     }
 
-    public boolean alterarTipoMembro(String matricula, TipoMembro novoTipo) {
-        return sistema.alterarTipoMembro(matricula, novoTipo);
-    }
-
     public String realizarEmprestimo(String codigoItem, String matricula) {
         return sistema.realizarEmprestimo(codigoItem, matricula);
     }

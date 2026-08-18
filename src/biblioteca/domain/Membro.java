@@ -6,7 +6,7 @@ public class Membro {
 
     private final String matricula;
     private final String nome;
-    private TipoMembro tipo;
+    private final TipoMembro tipo;
     private int emprestimosAtivos;
 
     public Membro(String matricula, String nome, TipoMembro tipo) throws RegraNegocioException {
@@ -31,18 +31,6 @@ public class Membro {
 
     public String getNome() {
         return nome;
-    }
-
-    public void setTipo(TipoMembro novoTipo) throws RegraNegocioException {
-        if (novoTipo == null) {
-            throw new RegraNegocioException("Tipo de membro invalido.");
-        }
-        if (emprestimosAtivos > novoTipo.getLimiteEmprestimos()) {
-            throw new RegraNegocioException(nome + " possui " + emprestimosAtivos
-                    + " emprestimos ativos e o tipo " + novoTipo.name()
-                    + " permite apenas " + novoTipo.getLimiteEmprestimos() + ".");
-        }
-        this.tipo = novoTipo;
     }
 
     public int getEmprestimosAtivos() {

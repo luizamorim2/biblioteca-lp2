@@ -40,9 +40,8 @@ public class SistemaConsole {
         System.out.println("5  - Listar membros");
         System.out.println("6  - Consultar item por codigo");
         System.out.println("7  - Alterar titulo de um item");
-        System.out.println("8  - Alterar tipo de um membro");
-        System.out.println("9  - Realizar emprestimo");
-        System.out.println("10 - Registrar devolucao");
+        System.out.println("8  - Realizar emprestimo");
+        System.out.println("9  - Registrar devolucao");
         System.out.println("0  - Sair");
         System.out.println();
     }
@@ -71,12 +70,9 @@ public class SistemaConsole {
                 alterarTituloItem();
                 break;
             case 8:
-                alterarTipoMembro();
-                break;
-            case 9:
                 realizarEmprestimo();
                 break;
-            case 10:
+            case 9:
                 registrarDevolucao();
                 break;
             case 0:
@@ -146,23 +142,6 @@ public class SistemaConsole {
 
         if (sucesso) {
             System.out.println("Titulo alterado com sucesso.");
-        } else {
-            System.out.println(controlador.getUltimoErro());
-        }
-    }
-
-    private void alterarTipoMembro() {
-        String matricula = lerTexto("Matricula do membro: ");
-        TipoMembro tipo = lerTipoMembro();
-
-        if (tipo == null) {
-            return;
-        }
-
-        boolean sucesso = controlador.alterarTipoMembro(matricula, tipo);
-
-        if (sucesso) {
-            System.out.println("Tipo alterado com sucesso.");
         } else {
             System.out.println(controlador.getUltimoErro());
         }

@@ -142,21 +142,6 @@ public class SistemaBiblioteca {
         }
     }
 
-    public boolean alterarTipoMembro(String matricula, TipoMembro novoTipo) {
-        Membro membro = buscarMembro(matricula);
-        if (membro == null) {
-            ultimoErro = "Membro nao encontrado.";
-            return false;
-        }
-        try {
-            membro.setTipo(novoTipo);
-            return true;
-        } catch (RegraNegocioException e) {
-            ultimoErro = e.getMessage();
-            return false;
-        }
-    }
-
     public String realizarEmprestimo(String codigoItem, String matricula) {
         ItemAcervo item = buscarItem(codigoItem);
         if (item == null) {
